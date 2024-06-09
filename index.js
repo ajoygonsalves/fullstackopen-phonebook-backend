@@ -24,6 +24,13 @@ let notes = [
   },
 ];
 
+const generateId = () => {
+  const maxId = notes.length > 0 ? Math.max(...notes.map((n) => n.id)) : 0;
+  return maxId + 1;
+};
+
+app.use(express.json());
+
 app.use((req, res, next) => {
   const options = { timeZoneName: "long" };
   req.requestTime = new Date().toLocaleString("en-UK", options);
@@ -54,6 +61,20 @@ app.delete("/api/persons/:id", (req, res) => {
     res.status(204).end();
   } else {
     res.status(404).json({ error: "Note not found" });
+  }
+});
+
+app.post("/api/persons", (req, res) => {
+  const initialLength = notes.length;
+
+  notes.push({
+    id: generateId(),
+    name: req.body.name,
+    number: req.body.number,
+  });
+
+  if (notes.length > initialLength) {
+    res.status(200).json({ message: "Added successfully" });
   }
 });
 
