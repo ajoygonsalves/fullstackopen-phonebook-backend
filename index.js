@@ -1,7 +1,7 @@
 const express = require("express");
 const app = express();
 
-const notes = [
+let notes = [
   {
     id: 1,
     name: "Arto Hellas",
@@ -42,6 +42,18 @@ app.get("/api/persons/:id", (req, res) => {
     res.json(note);
   } else {
     res.status(404).json({ error: "Invalid URI" });
+  }
+});
+
+app.delete("/api/persons/:id", (req, res) => {
+  const id = req.params.id;
+  const initialLength = notes.length;
+  notes = notes.filter((note) => note.id !== Number(id));
+
+  if (notes.length < initialLength) {
+    res.status(204).end();
+  } else {
+    res.status(404).json({ error: "Note not found" });
   }
 });
 
