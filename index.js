@@ -24,8 +24,20 @@ const notes = [
   },
 ];
 
-app.get("/api/persons", (request, response) => {
-  response.send(notes);
+app.use((req, res, next) => {
+  const options = { timeZoneName: "long" };
+  req.requestTime = new Date().toLocaleString("en-UK", options);
+  next();
+});
+
+app.get("/api/persons", (req, res) => {
+  res.send(notes);
+});
+
+app.get("/info", (req, res) => {
+  res.send(
+    `<p>Phonebook has info for ${notes.length} people</p><p>Time: ${req.requestTime}</p>`
+  );
 });
 
 const PORT = 3001;
