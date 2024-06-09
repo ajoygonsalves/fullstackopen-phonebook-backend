@@ -1,0 +1,62 @@
+# Node modules
+node_modules/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Environment variables
+.env
+
+# Production build
+dist/
+build/
+
+# Dependency directories
+jspm_packages/
+
+# Testing
+coverage/
+.nyc_output/
+
+# System files
+.DS_Store
+Thumbs.db
+
+# IDEs and Editors
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Optional npm cache directory
+.npm/
+
+# Optional eslint cache
+.eslintcache
+
+# Optional REPL history
+.node_repl_history
+
+# Miscellaneous
+*.swp
+*~
+
+# TypeScript
+*.tsbuildinfo
+
+# Yarn
+.yarn/
+.pnp.*
+.yarnrc.yml
+
+# Bower
+bower_components/
+
+# Next.js
+.next/
+out/
+
+# Nuxt.js
+.nuxt/
