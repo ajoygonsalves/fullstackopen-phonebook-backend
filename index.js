@@ -34,6 +34,17 @@ app.get("/api/persons", (req, res) => {
   res.send(notes);
 });
 
+app.get("/api/persons/:id", (req, res) => {
+  const id = req.params.id;
+  const note = notes.find((note) => note.id === Number(id));
+
+  if (note) {
+    res.json(note);
+  } else {
+    res.status(404).json({ error: "Invalid URI" });
+  }
+});
+
 app.get("/info", (req, res) => {
   res.send(
     `<p>Phonebook has info for ${notes.length} people</p><p>Time: ${req.requestTime}</p>`
