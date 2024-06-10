@@ -65,16 +65,26 @@ app.delete("/api/persons/:id", (req, res) => {
 });
 
 app.post("/api/persons", (req, res) => {
+  const { name, number } = req.body;
+
+  if (!name || !number) {
+    return res.status(400).json({ error: "Name and number are required" });
+  }
+
+  if (notes.some((note) => note.name === name)) {
+    return res.status(401).json({ error: "Name must be unique" });
+  }
+
   const initialLength = notes.length;
 
   notes.push({
     id: generateId(),
-    name: req.body.name,
-    number: req.body.number,
+    name: name,
+    number: number,
   });
 
   if (notes.length > initialLength) {
-    res.status(200).json({ message: "Added successfully" });
+    res.status(201).json({ message: "Added successfully" });
   }
 });
 
