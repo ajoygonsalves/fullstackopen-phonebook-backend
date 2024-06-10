@@ -1,5 +1,6 @@
 const express = require("express");
 const app = express();
+const morgan = require("morgan");
 
 let notes = [
   {
@@ -30,6 +31,8 @@ const generateId = () => {
 };
 
 app.use(express.json());
+
+app.use(morgan("tiny"));
 
 app.use((req, res, next) => {
   const options = { timeZoneName: "long" };
