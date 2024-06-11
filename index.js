@@ -91,14 +91,16 @@ app.post("/api/persons", (req, res) => {
 
   const initialLength = notes.length;
 
-  notes.push({
+  const newPerson = {
     id: generateId(),
     name: name,
     number: number,
-  });
+  };
+
+  notes.push(newPerson);
 
   if (notes.length > initialLength) {
-    res.status(201).json({ message: "Added successfully" });
+    res.status(201).json({ message: "Added successfully", person: newPerson });
   }
 });
 
