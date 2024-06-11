@@ -1,6 +1,7 @@
 const express = require("express");
 const app = express();
 const morgan = require("morgan");
+const cors = require("cors");
 
 let notes = [
   {
@@ -29,6 +30,10 @@ const generateId = () => {
   const maxId = notes.length > 0 ? Math.max(...notes.map((n) => n.id)) : 0;
   return maxId + 1;
 };
+
+app.use(cors());
+
+app.use(express.static("dist"));
 
 app.use(express.json());
 
