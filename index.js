@@ -26,12 +26,22 @@ let notes = [
   },
 ];
 
+const note = {
+  id: 1,
+  name: "Arto Hellas",
+  number: "040-123456",
+};
+
+notes = notes.concat(note);
+
 const generateId = () => {
   const maxId = notes.length > 0 ? Math.max(...notes.map((n) => n.id)) : 0;
   return maxId + 1;
 };
 
 app.use(cors());
+
+console.log("FIRST LOG: ");
 
 app.use(express.static("dist"));
 
