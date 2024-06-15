@@ -2,6 +2,7 @@ const express = require("express");
 const app = express();
 const morgan = require("morgan");
 const cors = require("cors");
+const Person = require("./models/person");
 
 let notes = [
   {
@@ -41,8 +42,6 @@ const generateId = () => {
 
 app.use(cors());
 
-console.log("FIRST LOG: ");
-
 app.use(express.static("dist"));
 
 app.use(express.json());
@@ -61,56 +60,99 @@ app.use((req, res, next) => {
   next();
 });
 
-app.get("/api/persons", (req, res) => {
-  res.send(notes);
-});
-
-app.get("/api/persons/:id", (req, res) => {
-  const id = req.params.id;
-  const note = notes.find((note) => note.id === Number(id));
-
-  if (note) {
-    res.json(note);
-  } else {
-    res.status(404).json({ error: "Invalid URI" });
+app.get("/api/persons", async (req, res) => {
+  try {
+    const persons = await Person.find({});
+    res.json(persons);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch notes" });
   }
 });
 
-app.delete("/api/persons/:id", (req, res) => {
-  const id = req.params.id;
-  const initialLength = notes.length;
-  notes = notes.filter((note) => note.id !== Number(id));
-
-  if (notes.length < initialLength) {
-    res.status(204).end();
-  } else {
-    res.status(404).json({ error: "Note not found" });
+app.get("/api/persons/:id", async (req, res) => {
+  try {
+    const personById = await Person.findById(req.params.id);
+    console.log(personById);
+    res.status(200).json({ message: "User found", person: personById });
+  } catch (error) {
+    res.status(404).json({ message: "Sorry, user not found" });
   }
 });
 
-app.post("/api/persons", (req, res) => {
-  const { name, number } = req.body;
+app.delete("/api/persons/:id", async (req, res) => {
+  try {
+    const personById = await Person.findById(req.params.id);
 
-  if (!name || !number) {
-    return res.status(400).json({ error: "Name and number are required" });
+    if (!personById) {
+      return res.status(404).json({ message: "Sorry, user not found" });
+    }
+
+    console.log({ personById });
+    await Person.deleteOne({ _id: req.params.id });
+    res.status(200).json({ message: "User deleted", person: personById });
+  } catch (error) {
+    console.error("Error deleting user:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
+});
 
-  if (notes.some((note) => note.name === name)) {
-    return res.status(401).json({ error: "Name must be unique" });
+app.post("/api/persons", async (req, res) => {
+  try {
+    const { firstName, lastName, phoneNumber } = req.body;
+
+    if (!firstName) {
+      return res.status(400).json({ error: "First name is missing" });
+    }
+
+    if (!lastName) {
+      return res.status(400).json({ error: "Last name is missing" });
+    }
+
+    if (!phoneNumber) {
+      return res.status(400).json({ error: "Phone number is missing" });
+    }
+
+    const newPerson = new Person({ firstName, lastName, phoneNumber });
+
+    await newPerson.save();
+
+    // Sending the success message and the newPerson object
+    res
+      .status(201)
+      .json({ message: "Person added successfully", person: newPerson });
+  } catch (error) {
+    console.log("Error, could not post", error);
+    res.status(500).json({ error: "Internal server error" });
   }
+});
 
-  const initialLength = notes.length;
+app.put("/api/persons/:id", async (req, res) => {
+  const { id } = req.params;
+  const { firstName, lastName, phoneNumber } = req.body;
 
-  const newPerson = {
-    id: generateId(),
-    name: name,
-    number: number,
-  };
+  try {
+    const updatedPerson = await Person.findByIdAndUpdate(
+      id,
+      { firstName, lastName, phoneNumber },
+      { new: true, runValidators: true }
+    );
 
-  notes.push(newPerson);
+    if (!updatedPerson) {
+      return res.status(404).json({
+        message: "Person not found",
+      });
+    }
 
-  if (notes.length > initialLength) {
-    res.status(201).json({ message: "Added successfully", person: newPerson });
+    res.status(200).json({
+      message: "Person updated successfully",
+      person: updatedPerson,
+    });
+  } catch (error) {
+    console.error("Error updating person:", error);
+    res.status(500).json({
+      message: "Unable to edit person",
+      error: error.message,
+    });
   }
 });
 
@@ -120,7 +162,7 @@ app.get("/info", (req, res) => {
   );
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT;
 app.listen(PORT, () => {
   console.log(`Server running on PORT: ${PORT}`);
 });

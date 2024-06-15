@@ -1,17 +1,7 @@
 const mongoose = require("mongoose");
+const Person = require("./models/person");
 
-if (process.argv.length < 3) {
-  console.log(
-    "As arguments please provide: <password> <person-name> <person-number>"
-  );
-  process.exit(1);
-}
-
-const password = process.argv[2];
-const personName = process.argv[3];
-const personNumber = process.argv[4];
-
-const mongooseURL = `mongodb+srv://ajoygonsalves:${password}@production.fltizzk.mongodb.net/?retryWrites=true&w=majority&appName=Production`;
+const mongooseURL = process.env.MONGODB_URL;
 
 main().catch((err) => console.log(err));
 
