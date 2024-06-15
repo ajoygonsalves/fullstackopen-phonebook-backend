@@ -137,10 +137,16 @@ app.put("/api/persons/:id", async (req, res) => {
   }
 });
 
-app.get("/info", (req, res) => {
-  res.send(
-    `<p>Phonebook has info for ${notes.length} people</p><p>Time: ${req.requestTime}</p>`
-  );
+app.get("/info", async (req, res) => {
+  try {
+    const count = await Person.count();
+    console.log({ second: count });
+    res.send(
+      `<p>Phonebook has info for ${count} people</p><p>Time: ${req.requestTime}</p>`
+    );
+  } catch (error) {
+    res.status(500).json({ message: "Internal server error", error });
+  }
 });
 
 const errorHandler = (error, request, response, next) => {
