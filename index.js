@@ -4,42 +4,6 @@ const morgan = require("morgan");
 const cors = require("cors");
 const Person = require("./models/person");
 
-let notes = [
-  {
-    id: 1,
-    name: "Arto Hellas",
-    number: "040-123456",
-  },
-  {
-    id: 2,
-    name: "Ada Lovelace",
-    number: "39-44-5323523",
-  },
-  {
-    id: 3,
-    name: "Dan Abramov",
-    number: "12-43-234345",
-  },
-  {
-    id: 4,
-    name: "Mary Poppendieck",
-    number: "39-23-6423122",
-  },
-];
-
-const note = {
-  id: 1,
-  name: "Arto Hellas",
-  number: "040-123456",
-};
-
-notes = notes.concat(note);
-
-const generateId = () => {
-  const maxId = notes.length > 0 ? Math.max(...notes.map((n) => n.id)) : 0;
-  return maxId + 1;
-};
-
 app.use(cors());
 
 app.use(express.static("dist"));
@@ -58,6 +22,10 @@ app.use((req, res, next) => {
   const options = { timeZoneName: "long" };
   req.requestTime = new Date().toLocaleString("en-UK", options);
   next();
+});
+
+app.get("/", (req, res) => {
+  res.sendFile(__dirname + "/dist/index.html");
 });
 
 app.get("/api/persons", async (req, res) => {
