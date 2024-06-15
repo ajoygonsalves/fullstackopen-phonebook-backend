@@ -2,6 +2,7 @@ const express = require("express");
 const app = express();
 const morgan = require("morgan");
 const cors = require("cors");
+const mongoose = require("mongoose");
 const Person = require("./models/person");
 
 app.use(cors());
@@ -37,26 +38,39 @@ app.get("/api/persons", async (req, res) => {
   }
 });
 
-app.get("/api/persons/:id", async (req, res) => {
+app.get("/api/persons/:id", async (req, res, next) => {
+  const { id } = req.params;
+
   try {
-    const personById = await Person.findById(req.params.id);
-    console.log(personById);
-    res.status(200).json({ message: "User found", person: personById });
+    const personById = await Person.findById(id);
+
+    if (personById) {
+      res.status(200).json({ message: "User found", person: personById });
+    } else {
+      res.status(404).json({ message: "Sorry, user not found" }).end();
+    }
   } catch (error) {
-    res.status(404).json({ message: "Sorry, user not found" });
+    console.log(error);
+    next(error);
   }
 });
 
 app.delete("/api/persons/:id", async (req, res) => {
+  const { id } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ message: "Invalid ID format" });
+  }
+
   try {
-    const personById = await Person.findById(req.params.id);
+    const personById = await Person.findById(id);
 
     if (!personById) {
       return res.status(404).json({ message: "Sorry, user not found" });
     }
 
     console.log({ personById });
-    await Person.deleteOne({ _id: req.params.id });
+    await Person.deleteOne({ _id: id });
     res.status(200).json({ message: "User deleted", person: personById });
   } catch (error) {
     console.error("Error deleting user:", error);
@@ -84,7 +98,6 @@ app.post("/api/persons", async (req, res) => {
 
     await newPerson.save();
 
-    // Sending the success message and the newPerson object
     res
       .status(201)
       .json({ message: "Person added successfully", person: newPerson });
@@ -98,6 +111,10 @@ app.put("/api/persons/:id", async (req, res) => {
   const { id } = req.params;
   const { firstName, lastName, phoneNumber } = req.body;
 
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ message: "Invalid ID format" });
+  }
+
   try {
     const updatedPerson = await Person.findByIdAndUpdate(
       id,
@@ -106,21 +123,17 @@ app.put("/api/persons/:id", async (req, res) => {
     );
 
     if (!updatedPerson) {
-      return res.status(404).json({
-        message: "Person not found",
-      });
+      return res.status(404).json({ message: "Person not found" });
     }
 
-    res.status(200).json({
-      message: "Person updated successfully",
-      person: updatedPerson,
-    });
+    res
+      .status(200)
+      .json({ message: "Person updated successfully", person: updatedPerson });
   } catch (error) {
     console.error("Error updating person:", error);
-    res.status(500).json({
-      message: "Unable to edit person",
-      error: error.message,
-    });
+    res
+      .status(500)
+      .json({ message: "Unable to edit person", error: error.message });
   }
 });
 
@@ -129,6 +142,18 @@ app.get("/info", (req, res) => {
     `<p>Phonebook has info for ${notes.length} people</p><p>Time: ${req.requestTime}</p>`
   );
 });
+
+const errorHandler = (error, request, response, next) => {
+  console.error(error.message);
+
+  if (error.name === "CastError") {
+    return response.status(400).send({ error: "malformatted id" });
+  }
+
+  next(error);
+};
+
+app.use(errorHandler);
 
 const PORT = process.env.PORT;
 app.listen(PORT, () => {
