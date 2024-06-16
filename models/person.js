@@ -6,9 +6,21 @@ mongoose.set("strictQuery", true);
 
 // Define the schema
 const personSchema = new mongoose.Schema({
-  firstName: String,
-  lastName: String,
-  phoneNumber: String,
+  firstName: {
+    type: String,
+    minLength: 3,
+    required: true,
+  },
+  lastName: {
+    type: String,
+    minLength: 3,
+    required: true,
+  },
+  phoneNumber: {
+    type: String,
+    minLength: 2,
+    required: true,
+  },
 });
 
 personSchema.set("toJSON", {
